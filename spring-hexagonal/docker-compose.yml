@@ -1,0 +1,6 @@
+services:
+  spring-api:
+    build: .
+    container_name: spring-api
+    ports:
+      - 8080:8080

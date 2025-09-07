@@ -7,7 +7,12 @@ import com.gautier.api.infrastructure.adapter.FinanceAdapter;
 import com.gautier.api.infrastructure.dto.QuoteDto;
 import com.gautier.api.infrastructure.dto.QuoteTypeDTO;
 import jakarta.validation.constraints.NotBlank;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -24,10 +29,17 @@ public class FinanceController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasRole('ROLE_READ')")
     QuoteDto search(@RequestParam(required = true) @NotBlank String search,
                     @RequestParam(required = false) QuoteTypeDTO type) throws QueryNotFoundException {
         List<Quote> searchResults = this.financeService.search(financeAdapter.toDomain(search, type));
         return financeAdapter.toDto(searchResults);
+    }
+
+
+    @GetMapping("/whoami")
+    public Object whoami(Authentication authentication) {
+        return authentication.getAuthorities();
     }
 
 }

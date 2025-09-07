@@ -1,5 +1,3 @@
-- docker file
-- readme
 - log manager
 - spring security
 - AOP

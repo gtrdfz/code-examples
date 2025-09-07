@@ -8,12 +8,14 @@ import com.gautier.api.application.domain.model.QuoteType;
 import com.gautier.api.application.domain.model.SearchRequest;
 import com.gautier.api.application.port.FinanceService;
 import com.gautier.api.infrastructure.adapter.FinanceAdapter;
+import com.gautier.api.infrastructure.configuration.SecurityConfig;
 import com.gautier.api.infrastructure.dto.QuoteDto;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -21,12 +23,11 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(FinanceController.class)
-@Import(FinanceAdapter.class)
+@Import({FinanceAdapter.class, SecurityConfig.class})
 public class FinanceControllerTest {
 
     @Autowired
@@ -39,6 +40,7 @@ public class FinanceControllerTest {
     private FinanceService financeService;
 
     @Test
+    @WithMockUser(roles = "READ")
     void should_search_quotes() throws Exception {
         // arrange
         SearchRequest searchRequest = new SearchRequest("apple", Optional.of(QuoteType.EQUITY));
@@ -64,6 +66,7 @@ public class FinanceControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "READ")
     void should_search_quotes_without_type() throws Exception {
         // arrange
         SearchRequest searchRequest = new SearchRequest("apple", Optional.empty());
@@ -88,24 +91,31 @@ public class FinanceControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "READ")
     void should_failed_when_search_quotes_with_empty_query() throws Exception {
         mockMvc.perform(get("/finance/search")
                         .param("search", "")
                         .param("type", "EQUITY"))
-                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
     @Test
+    @WithMockUser(roles = "READ")
     void should_failed_when_query_not_found() throws Exception {
-        // arrange
         SearchRequest searchRequest = new SearchRequest("ssss", Optional.empty());
 
         Mockito.when(financeService.search(searchRequest)).thenThrow(QueryNotFoundException.class);
 
         mockMvc.perform(get("/finance/search")
                         .param("search", "ssss"))
-                .andDo(print())
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(roles = "WRITE")
+    void should_failed_roles_forbidden() throws Exception {
+        mockMvc.perform(get("/finance/search")
+                        .param("search", "ssss"))
+                .andExpect(status().isForbidden());
     }
 }

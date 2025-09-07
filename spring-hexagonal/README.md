@@ -27,9 +27,9 @@ Log in using the username/password defined in the `docker-compose.yml`.
 ![](./images/keycloak_user_assign_role.png)
 
 
-### Usefull endpoit
-OpenID configuration : http://localhost:8081/realms/external/.well-known/openid-configuration
+### Usefull link
 
+OpenID configuration : http://localhost:8081/realms/external/.well-known/openid-configuration
 
 ### Fetching a Token
 From Insomnia (or Postman), configure the request as shown:
@@ -40,4 +40,3 @@ Then copy the Access Token and paste it into [jwt.io](https://www.jwt.io/) to in
 ### Swagger URL
 
 http://localhost:8080/swagger-ui/index.html
-
